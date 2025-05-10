@@ -1,0 +1,33 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<div class="table-toolbar">
+    <div class="search-container">
+        <input type="text" placeholder="Buscar..." class="search-input">
+        <button class="search-button">
+            <ion-icon name="search-outline"></ion-icon>
+        </button>
+    </div>
+    <button class="add-new-button">
+        <ion-icon name="add-outline"></ion-icon>
+        Agregar
+    </button>
+</div>
+<div class="members-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Título </th>
+                <th>Fecha</th>
+                <th>Tomo</th>
+                <th>Páginas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="6">No hay miembros añadidos</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

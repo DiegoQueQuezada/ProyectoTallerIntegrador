@@ -1,0 +1,249 @@
+/* Estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header */
+.app-header {
+    background-color: #ffffff;
+    padding: 0 20px;
+    border-bottom: 1px solid #d3d3d3;
+    /* height: 60px; */
+    display: flex;
+    align-items: center;
+    box-shadow: none;
+    padding: 0px 10px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.app-logo {
+    height: 50px;
+    margin-right: 40px;
+}
+
+.app-header h1 {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+/* Cuerpo de la aplicación */
+.app-body {
+    display: flex;
+    flex: 1;
+}
+
+/* Sidebar */
+.app-sidebar {
+    width: 250px;
+    background-color: #eeeeeecb;
+    padding: 20px 0;
+}
+
+.sidebar-nav {
+    margin-bottom: 30px;
+}
+
+.sidebar-title {
+    color: #000000;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    padding: 0 20px 10px;
+    margin-top: 7px;
+    border-bottom: 1px solid #ffffff;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+}
+.sidebar-nav li.selected {
+    background-color: #000; /* Fondo negro */
+}
+
+.sidebar-nav li.selected a {
+    color: #fff !important; /* Texto blanco (forzado) */
+}
+
+/* Hover para el ítem seleccionado */
+.sidebar-nav li.selected:hover {
+    background-color: #333; /* Negro más claro al pasar el mouse */
+}
+.sidebar-nav li {
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav li:hover {
+    background-color: #000;
+}
+.sidebar-nav li:hover a {
+    color: #fff; /* Texto blanco al hacer hover */
+}
+
+
+.sidebar-nav li.active {
+    background-color: #000000;
+    color: white;
+}
+
+.sidebar-nav a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.member-actions {
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.member-actions button {
+    background-color: #34495e;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.add-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 3px;
+    margin: 10px 20px;
+    cursor: pointer;
+    width: calc(100% - 40px);
+}
+
+/* Contenido principal */
+.app-content {
+    flex: 1;
+    padding: 20px;
+    background-color: white;
+}
+
+.members-table {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Logout (puedes añadirlo donde prefieras) */
+.logout-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 5px;
+}
+
+/* Contenedor de búsqueda */
+.search-container {
+    position: relative;
+    width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 15px 8px 35px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.search-button {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Botón Agregar */
+.add-new-button {
+    background-color: #000000;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+}
+
+.add-new-button:hover {
+    background-color: #4b4b4b;
+}
+
+/* Iconos SVG */
+.add-new-button svg,
+.search-button svg {
+    vertical-align: middle;
+}

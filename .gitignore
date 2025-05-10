@@ -1,0 +1,48 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.db
+*.sqlite3
+*.log
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+*.bak
+*.swp
+
+# Django settings local (evita subir configuraciones sensibles)
+settings_local.py
+
+# Archivos de migración
+migrations/
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+.env/
+
+# Archivos de base de datos
+*.db
+*.sqlite3
+
+# Archivos de configuración de IDEs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de backup de editor
+*~
+*.bak
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

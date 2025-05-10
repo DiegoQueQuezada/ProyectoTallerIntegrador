@@ -1,0 +1,98 @@
+{% extends 'index.html' %}
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir PDF</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 60px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 20px 0 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            color: #444;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Subir PDF y hacer preguntas</h1>
+        <form id="pdfForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="file">Selecciona un PDF:</label>
+            <input type="file" name="file" id="file" required>
+
+            <label for="question">Pregunta:</label>
+            <input type="text" name="question" id="question" placeholder="Escribe tu pregunta aquí" required>
+
+            <button type="submit">Subir y preguntar</button>
+        </form>
+
+        <h2>Respuesta</h2>
+        <div id="response"></div>
+    </div>
+
+<script>
+    document.getElementById('pdfForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const response = await fetch('/pdfapp/upload/', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+        document.getElementById('response').innerText = data.answer;
+        console.log("RPTA " + rpta)
+    });
+</script>
+</body>
+{% endblock %}
