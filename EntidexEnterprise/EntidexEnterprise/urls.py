@@ -21,12 +21,12 @@ from PDFapp import views
 from django.conf import settings
 from django.conf.urls.static import static
 
-    
+
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.indexView),
-    path("archivos/", views.archivosView,name="archivos"),
-    path('pdfapp/', include('PDFapp.urls'))
+    path("", views.presentationView),
+    path("archivos/", views.archivosView, name="archivos"),
+    path("pdfapp/", include("PDFapp.urls")),
 ]
 
 if settings.DEBUG:
