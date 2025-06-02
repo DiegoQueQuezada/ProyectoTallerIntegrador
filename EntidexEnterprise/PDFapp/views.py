@@ -1,74 +1,43 @@
-from django.shortcuts import render
-import os
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 from .models import PDFDocument
-from langchain.llms import Ollama
-from pypdf import PdfReader
-from langchain.prompts import PromptTemplate
-from django.conf import settings
-from django.core.files.storage import default_storage
+from django.shortcuts import render
+import datetime
+import os
 
-
-# pylint: disable=no-member
-# Create your views here.
 def indexView(request):
-    """..."""
-    return render(request, "index.html")
-
-
-def presentationView(request):
-    """..."""
-    return render(request, "presentacion.html")
-
-
-def pdfView(request):
-    """..."""
-    return render(request, "pdfView.html")
-
-
+    return render(request, "index.html")  # Crea este template luego
 def archivosView(request):
-    """..."""
+    # Aquí renderizas tu archivo HTML
     return render(request, "archivosView.html")
-
-
+def pdfView(request):
+    return render(request, 'pdfView.html')
 @csrf_exempt
-def upload_pdf(request):
-    if request.method == "POST":
-        try:
-            pdf_file = request.FILES["file"]
-            relative_path = f"uploads/{pdf_file.name}"
-            absolute_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+@require_POST
+def guardar_pdf(request):
+    try:
+        numero_caso = request.POST.get('numero_caso')
+        titulo = request.POST.get('titulo')
+        fecha = request.POST.get('fecha')
+        tipo_documento = request.POST.get('tipo_documento')
+        jurisdiccion = request.POST.get('jurisdiccion')
+        archivo_pdf = request.FILES.get('archivo_pdf')
 
-            # Verificar si el archivo ya existe en uploads/
-            if default_storage.exists(relative_path):
-                print(f"El archivo {pdf_file.name} ya existe, no se guarda de nuevo.")
-            else:
-                # Guardar el archivo porque no existe
-                default_storage.save(relative_path, pdf_file)
-                print(f"Archivo guardado en: {absolute_file_path}")
+        if not archivo_pdf:
+            return JsonResponse({'error': 'No se proporcionó ningún archivo PDF.'}, status=400)
 
-            # Leer el texto del PDF (del archivo que ya está en uploads/)
-            reader = PdfReader(absolute_file_path)
-            text = ""
-            for page in reader.pages:
-                text += page.extract_text()
+        # Crear y guardar el objeto en la base de datos usando el modelo
+        PDFDocument.objects.create(
+            numero_caso=numero_caso,
+            titulo=titulo,
+            fecha=fecha,
+            tipo_documento=tipo_documento,
+            jurisdiccion=jurisdiccion,
+            archivo_pdf=archivo_pdf
+        )
 
-            # Procesar la pregunta
-            question = request.POST.get("question", "¿De qué trata este documento?")
-            from langchain_ollama import OllamaLLM
-
-            llm = OllamaLLM(model="gemma:2b")
-            prompt_template = PromptTemplate.from_template(
-                "Texto del PDF:\n{text}\nPregunta: {question}"
-            )
-            formatted_prompt = prompt_template.format(text=text, question=question)
-
-            answer = llm.invoke(formatted_prompt)
-
-            return JsonResponse({"answer": str(answer)})
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-
-    return render(request, "pdfapp/upload.html")
+        return JsonResponse({'mensaje': 'Archivo guardado correctamente', 'nombre': archivo_pdf.name})
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

@@ -79,10 +79,16 @@ WSGI_APPLICATION = "EntidexEnterprise.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "mssql",
+        "NAME": "TallerIntegrador",
+        "HOST": r"DESKTOP-HMENEI9\SQLSERVER",
+        "OPTIONS": {
+            "driver": "ODBC Driver 17 for SQL Server",
+            "trusted_connection": "yes",
+        },
     }
 }
+
 
 
 # Password validation

@@ -25,25 +25,56 @@
         <span class="close" onclick="closeModal()">&times;</span>
         <h2>Registrar Nuevo PDF</h2>
         <form id="pdfForm">
-            <div class="form-group">
-                <label for="titulo">Título:</label>
-                <input type="text" id="titulo" required>
-            </div>
-            <div class="form-group">
-                <label for="fecha">Fecha:</label>
-                <input type="date" id="fecha" required>
-            </div>
-            <div class="form-group">
-                <label for="tomo">Tomo:</label>
-                <input type="number" id="tomo" required>
-            </div>
-            <div class="form-group">
-                <label for="paginas">Páginas:</label>
-                <input type="number" id="paginas" required>
-            </div>
-            <div class="form-group">
-                <label for="pdfFile">Archivo PDF:</label>
-                <input type="file" id="pdfFile" accept=".pdf" required>
+            <div class="form-columns">
+                <div class="form-left">
+                    <div class="form-group">
+                        <label for="Numerodecaso">Número de Caso/Expediente:</label>
+                        <input type="text" id="Numerodecaso" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="titulo">Título</label>
+                        <input type="text" id="titulo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha">Fecha:</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                </div>
+                
+                <div class="form-right">
+                    <div class="form-group">
+                        <label for="tipoDocumento">Tipo de documento:</label>
+                        <select id="tipoDocumento" name="tipoDocumento" required onchange="toggleOtherDocument()">
+                            <option value="">-- Seleccione un tipo --</option>
+                            <option value="demanda">Demanda</option>
+                            <option value="contrato">Contrato</option>
+                            <option value="recurso">Recurso</option>
+                            <option value="sentencia">Sentencia</option>
+                            <option value="escritura_publica">Escritura Pública</option>
+                            <option value="testamento">Testamento</option>
+                            <option value="poder_notarial">Poder Notarial</option>
+                            <option value="dictamen">Dictamen Jurídico</option>
+                            <option value="otro">Otro...</option>
+                        </select>
+                        <div id="otherDocumentContainer" class="other-document-container">
+                            <label for="otherDocument">Especificar tipo de documento:</label>
+                            <input type="text" id="otherDocument">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="jurisdiccion">Jurisdicción:</label>
+                        <select id="jurisdiccion" name="Jurisdiccion" required>
+                            <option value="">-- Seleccione una jurisdicción --</option>
+                            <option value="local">Local</option>
+                            <option value="nacional">Nacional</option>
+                            <option value="internacional">Internacional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdfFile">Archivo PDF:</label>
+                        <input type="file" id="pdfFile" accept=".pdf" required>
+                    </div>
+                </div>
             </div>
             <button type="button" class="submit-button" onclick="savePDF()">Guardar</button>
         </form>
@@ -57,8 +88,6 @@
             <tr>
                 <th>Título</th>
                 <th>Fecha</th>
-                <th>Tomo</th>
-                <th>Páginas</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -71,7 +100,7 @@
 </div>
 
 <script>
-    // Funciones JavaScript (las mismas del código anterior)
+    // Funciones JavaScript
     function openModal() {
         document.getElementById('pdfModal').style.display = 'block';
     }
@@ -79,30 +108,65 @@
     function closeModal() {
         document.getElementById('pdfModal').style.display = 'none';
         document.getElementById('pdfForm').reset();
+        document.getElementById('otherDocumentContainer').style.display = 'none';
+    }
+
+    function toggleOtherDocument() {
+        const tipoDocumento = document.getElementById('tipoDocumento').value;
+        const otherDocumentContainer = document.getElementById('otherDocumentContainer');
+        
+        if (tipoDocumento === 'otro') {
+            otherDocumentContainer.style.display = 'block';
+        } else {
+            otherDocumentContainer.style.display = 'none';
+        }
     }
 
     function savePDF() {
-        const titulo = document.getElementById('titulo').value;
-        const fecha = document.getElementById('fecha').value;
-        const tomo = document.getElementById('tomo').value;
-        const paginas = document.getElementById('paginas').value;
-        const pdfFile = document.getElementById('pdfFile').files[0];
+    const formData = new FormData();
+    formData.append('numero_caso', document.getElementById('Numerodecaso').value);
+    formData.append('titulo', document.getElementById('titulo').value);
+    formData.append('fecha', document.getElementById('fecha').value);
+    
+    const tipoDocumento = document.getElementById('tipoDocumento').value;
+    const otherDocument = document.getElementById('otherDocument').value;
+    const tipoDocumentoFinal = tipoDocumento === 'otro' ? otherDocument : tipoDocumento;
+    formData.append('tipo_documento', tipoDocumentoFinal);
 
-        if (!titulo || !fecha || !tomo || !paginas || !pdfFile) {
-            alert("Complete todos los campos");
-            return;
+    formData.append('jurisdiccion', document.getElementById('jurisdiccion').value);
+    formData.append('archivo_pdf', document.getElementById('pdfFile').files[0]);
+
+    fetch('/guardar-pdf/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            //'X-CSRFToken': getCookie('csrftoken')  // Si quieres manejar CSRF, aunque @csrf_exempt lo omite.
         }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.error){
+            alert("Error: " + data.error);
+        } else {
+            alert(data.mensaje);
+            // Aquí puedes agregar el registro a la tabla o recargar la lista
+            closeModal();
+        }
+    })
+    .catch(error => {
+        alert("Error en la petición: " + error);
+    });
+    }
 
+    function agregarFilaATabla(titulo, fecha, nombreArchivo) {
         const tableBody = document.getElementById('tableBody');
         const newRow = document.createElement('tr');
 
         newRow.innerHTML = `
             <td>${titulo}</td>
             <td>${fecha}</td>
-            <td>${tomo}</td>
-            <td>${paginas}</td>
             <td>
-                <button class="action-button view" onclick="viewPDF('${pdfFile.name}')">
+                <button class="action-button view" onclick="viewPDF('${nombreArchivo}')">
                     <ion-icon name="eye-outline"></ion-icon>
                 </button>
                 <button class="action-button delete" onclick="deleteRow(this)">
@@ -116,8 +180,8 @@
         }
 
         tableBody.appendChild(newRow);
-        closeModal();
     }
+
 
     function deleteRow(button) {
         if (confirm("¿Eliminar este registro?")) {
@@ -126,7 +190,7 @@
             
             const tableBody = document.getElementById('tableBody');
             if (tableBody.children.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5">No hay archivos registrados</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="3">No hay archivos registrados</td></tr>';
             }
         }
     }
