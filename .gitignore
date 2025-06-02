@@ -46,3 +46,13 @@ env/
 # Archivos de sistema
 .DS_Store
 Thumbs.db
+
+# Ignorar base de datos local y cachés
+chroma_langchain_db/
+.ipynb_checkpoints/
+venv/
+
+# Ignorar archivos temporales o de sistema
+__pycache__/
+*.pyc
+
