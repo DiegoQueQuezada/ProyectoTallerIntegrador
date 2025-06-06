@@ -80,15 +80,16 @@ WSGI_APPLICATION = "EntidexEnterprise.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "mssql",
-        "NAME": "TallerIntegrador",
-        "HOST": r"DESKTOP-HMENEI9\SQLSERVER",
+        "NAME": "BD_SistemaJuridico",
+        "USER": "sa",
+        "PASSWORD": "mierda",  # Reemplaza con la real
+        "HOST": r"DESKTOP-HR37GPJ\QUEZADA",
         "OPTIONS": {
             "driver": "ODBC Driver 17 for SQL Server",
             "trusted_connection": "yes",
         },
     }
 }
-
 
 
 # Password validation
