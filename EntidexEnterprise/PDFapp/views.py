@@ -1,5 +1,5 @@
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import *
 from django.http import JsonResponse
 from .models import PDFDocument
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -13,6 +13,7 @@ from .langchain_pipeline import graph, vector_store, Document  # Importa lo nece
 from django.core.files.storage import default_storage
 import datetime
 import os
+import json
 import hashlib
 import shutil
 
@@ -142,3 +143,91 @@ def file_hash(file_path):
         while chunk := f.read(8192):
             h.update(chunk)
     return h.hexdigest()
+
+@csrf_exempt
+@require_GET
+def listar_pdfs(request):
+    # Filtrar por búsqueda si existe
+    query = request.GET.get('q', '')
+    if query:
+        pdfs = PDFDocument.objects.filter(titulo__icontains=query)
+    else:
+        pdfs = PDFDocument.objects.all().order_by('-creado_en')
+    
+    # Preparar los datos para JSON
+    archivos_list = []
+    for pdf in pdfs:
+        archivos_list.append({
+            'id': pdf.id,
+            'numero_caso': pdf.numero_caso,
+            'titulo': pdf.titulo,
+            'fecha': pdf.fecha.strftime('%Y-%m-%d') if pdf.fecha else None,
+            'tipo_documento': pdf.tipo_documento,
+            'jurisdiccion': pdf.jurisdiccion,
+            'pdf_url': request.build_absolute_uri(os.path.join(settings.MEDIA_URL, str(pdf.archivo_pdf))) if pdf.archivo_pdf else None,
+            'creado_en': pdf.creado_en.strftime('%Y-%m-%d %H:%M:%S') if pdf.creado_en else None
+        })
+    
+    response_data = {
+        'success': True,
+        'count': len(archivos_list),
+        'results': archivos_list,
+        'search_query': query
+    }
+    
+    return JsonResponse(response_data, safe=False)
+
+@csrf_exempt
+@require_POST
+def eliminar_pdf(request):
+    """Elimina un PDF por ID"""
+    try:
+        pdf_id = request.POST.get('id')
+        if not pdf_id:
+            return JsonResponse({'error': 'ID no proporcionado'}, status=400)
+
+        documento = PDFDocument.objects.get(id=pdf_id)
+        documento.archivo_pdf.delete()  # Elimina el archivo físico
+        documento.delete()  # Elimina el registro
+
+        return JsonResponse({'success': True})
+
+    except PDFDocument.DoesNotExist:
+        return JsonResponse({'error': 'Documento no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+@csrf_exempt
+@require_POST
+def consultar_pdf(request):
+    try:
+        data = json.loads(request.body)
+        pdf_id = data.get('pdf_id')
+        question = data.get('question')
+        
+        if not pdf_id or not question:
+            return JsonResponse({'error': 'Datos incompletos'}, status=400)
+        
+        # Obtener el documento PDF
+        pdf_doc = PDFDocument.objects.get(id=pdf_id)
+        pdf_path = os.path.join(settings.MEDIA_ROOT, str(pdf_doc.archivo_pdf))
+        
+        # Procesar el PDF y responder la pregunta (usando tu lógica existente)
+        reader = PdfReader(pdf_path)
+        text = ""
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+        
+        # Aquí usarías tu pipeline de LangChain para responder
+        state = {"question": question, "context": text, "answer": ""}
+        state = graph.invoke(state)
+        
+        print("DATAAAAAA");
+        print(state['answer']);
+        return JsonResponse({'answer': state['answer']})
+        
+    except PDFDocument.DoesNotExist:
+        return JsonResponse({'error': 'Documento no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
