@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --upgrade pip
 
 # Copiar e instalar requerimientos
-COPY EntidexEnterprise/requirements.txt .
+COPY EntidexEnterprise/requirements-prod.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar archivos del proyecto
