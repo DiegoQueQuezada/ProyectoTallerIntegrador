@@ -1,7 +1,5 @@
 EntidexEnterprise/__pycache__/
 EntidexEnterprise/*.py[cod]
-EntidexEnterprise/*.pyo
-EntidexEnterprise/*.pyd
 EntidexEnterprise/*.ipynb
 EntidexEnterprise/*.sqlite3
 EntidexEnterprise/*.db
@@ -9,6 +7,6 @@ EntidexEnterprise/venv/
 EntidexEnterprise/media/
 EntidexEnterprise/pdfs/
 EntidexEnterprise/chroma_langchain_db/
-EntidexEnterprise/.DS_Store
-EntidexEnterprise/.git/
 EntidexEnterprise/.ipynb_checkpoints/
+.DS_Store
+.git/

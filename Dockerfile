@@ -1,4 +1,4 @@
-# Imagen base liviana con Python
+# Imagen base
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -17,11 +17,15 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install --upgrade pip
 
-COPY requirements.txt .
+# Copiar e instalar requerimientos
+COPY EntidexEnterprise/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY conectar_sqlserver.py ./
-COPY manage.py ./
-COPY EntidexEnterprise ./EntidexEnterprise/
+# Copiar archivos del proyecto
+COPY EntidexEnterprise/conectar_sqlserver.py ./
+COPY EntidexEnterprise/manage.py ./
+COPY EntidexEnterprise/EntidexEnterprise ./EntidexEnterprise/
+COPY EntidexEnterprise/PDFapp ./PDFapp/
 
+# Ejecutar servidor Django
 CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "EntidexEnterprise.wsgi:application"]
