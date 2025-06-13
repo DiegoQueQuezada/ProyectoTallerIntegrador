@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+.env
+venv/
+*.log
+*.sqlite3
+.ipynb_checkpoints/
+models/
+datasets/
+node_modules/
+*.pt
+*.onnx
+*.bin
+*.ckpt
