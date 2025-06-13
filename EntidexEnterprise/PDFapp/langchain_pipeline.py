@@ -9,6 +9,7 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing_extensions import TypedDict, List
 from dotenv import load_dotenv
+from langchain_core.runnables import Runnable
 
 load_dotenv()  # Esto carga automáticamente las variables del archivo .env
 
@@ -90,3 +91,25 @@ def generate(state: State) -> dict:
 graph_builder = StateGraph(State).add_sequence([retrieve, generate])
 graph_builder.add_edge(START, "retrieve")
 graph = graph_builder.compile()
+
+
+def construir_graph_con(vector_store: Chroma) -> Runnable:
+    def retrieve(state: State) -> dict:
+        print(f"🔍 Buscando contexto para la pregunta: {state['question']}")
+        retrieved_docs = vector_store.similarity_search(state["question"])
+        print(f"✅ Documentos recuperados: {len(retrieved_docs)}")
+        return {"context": retrieved_docs}
+
+    def generate(state: State) -> dict:
+        print("🧠 Generando respuesta...")
+        docs_content = "\n\n".join(doc.page_content for doc in state["context"])
+        question_es = state["question"] + "\nPor favor responde en español."
+        messages = prompt.invoke({"question": question_es, "context": docs_content})
+        response = llm.invoke(messages)
+        print("✅ Respuesta generada.")
+        return {"answer": response.content}
+
+    graph_builder = StateGraph(State).add_sequence([retrieve, generate])
+    graph_builder.add_edge(START, "retrieve")
+    return graph_builder.compile()
+

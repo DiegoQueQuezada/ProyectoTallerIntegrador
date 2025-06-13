@@ -9,7 +9,7 @@ from langchain.llms import Ollama
 from pypdf import PdfReader
 from langchain.prompts import PromptTemplate
 from django.conf import settings
-from .langchain_pipeline import graph, vector_store, Document  # Importa lo necesario
+from .langchain_pipeline import construir_graph_con, Document
 from django.core.files.storage import default_storage
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import datetime
@@ -255,13 +255,11 @@ def consultar_pdf(request):
         if not numero_caso or not pregunta:
             return JsonResponse({"error": "Faltan datos"}, status=400)
 
-        # Buscar el documento asociado
         try:
             documento = PDFDocument.objects.get(numero_caso=numero_caso)
         except PDFDocument.DoesNotExist:
             return JsonResponse({"error": "No se encontró el documento PDF"}, status=404)
 
-        # Cargar el vectorstore
         vectorstore_dir = f"./chroma_dbs/{numero_caso}"
         if not os.path.exists(vectorstore_dir):
             return JsonResponse({"error": "No se encontró el vector store para ese caso"}, status=404)
@@ -274,13 +272,14 @@ def consultar_pdf(request):
             persist_directory=vectorstore_dir,
         )
 
-        # Ejecutar el grafo de razonamiento
+        # 💡 Construir el grafo con este vector_store específico
+        graph = construir_graph_con(vector_store)
+
         state = {"question": pregunta, "context": [], "answer": ""}
         state = graph.invoke(state)
 
         respuesta = state["answer"]
 
-        # Guardar la interacción
         PDFInteraccion.objects.create(
             pdf_document=documento,
             prompt=pregunta,

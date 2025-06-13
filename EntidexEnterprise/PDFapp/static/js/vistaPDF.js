@@ -470,9 +470,7 @@ function viewPDF(filename) {
 }
 
 function cargarTablaPDFs() {
-    console.log("Llamando a /listar-pdfs...");
     $.get('/listar-pdfs', function (data) {
-        console.log("Datos recibidos de /listar-pdfs:", data);
         const tbody = $('#tableBody');
         tbody.empty();
 
