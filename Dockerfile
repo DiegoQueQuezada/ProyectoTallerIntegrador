@@ -26,6 +26,7 @@ COPY EntidexEnterprise/conectar_sqlserver.py ./
 COPY EntidexEnterprise/manage.py ./
 COPY EntidexEnterprise/EntidexEnterprise ./EntidexEnterprise/
 COPY EntidexEnterprise/PDFapp ./PDFapp/
+COPY static ./static/
 
 # Ejecutar collectstatic para producción
 RUN python manage.py collectstatic --noinput
