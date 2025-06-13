@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import *
 from django.http import JsonResponse
-from .models import PDFDocument
+from .models import PDFDocument, PDFInteraccion  # Asegurate de importar tus modelos
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from django.shortcuts import render
@@ -11,23 +11,25 @@ from langchain.prompts import PromptTemplate
 from django.conf import settings
 from .langchain_pipeline import graph, vector_store, Document  # Importa lo necesario
 from django.core.files.storage import default_storage
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import datetime
 import os
 import json
 import hashlib
 import shutil
 
+
 def indexView(request):
-    return render(request, "index.html")  # Crea este template luego
+    return render(request, "vistaPrincipal.html")  # Crea este template luego
 
 
 def archivosView(request):
     # Aquí renderizas tu archivo HTML
-    return render(request, "archivosView.html")
+    return render(request, "vistaConsultar.html")
 
 
 def pdfView(request):
-    return render(request, "pdfView.html")
+    return render(request, "vistaPDF.html")
 
 
 @csrf_exempt
@@ -47,7 +49,7 @@ def guardar_pdf(request):
             )
 
         # Crear y guardar el objeto en la base de datos usando el modelo
-        PDFDocument.objects.create(
+        obj = PDFDocument.objects.create(
             numero_caso=numero_caso,
             titulo=titulo,
             fecha=fecha,
@@ -55,6 +57,7 @@ def guardar_pdf(request):
             jurisdiccion=jurisdiccion,
             archivo_pdf=archivo_pdf,
         )
+        guardar_vectorstore_para_pdf(obj.archivo_pdf.path, numero_caso)
 
         return JsonResponse(
             {"mensaje": "Archivo guardado correctamente", "nombre": archivo_pdf.name}
@@ -64,13 +67,42 @@ def guardar_pdf(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+def guardar_vectorstore_para_pdf(archivo_path, numero_caso):
+    vectorstore_dir = f"./chroma_dbs/{numero_caso}"
+    os.makedirs(vectorstore_dir, exist_ok=True)
+
+    # Leer y procesar el PDF
+    reader = PdfReader(archivo_path)
+    text = ""
+    for page in reader.pages:
+        page_text = page.extract_text()
+        if page_text:
+            text += page_text + "\n"
+
+    # Dividir en chunks (mejor para embeddings)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    docs = splitter.split_documents([Document(page_content=text)])
+
+    # Crear y guardar el vector store
+    vector_store = Chroma(
+        collection_name=f"collection_{numero_caso}",
+        embedding_function=HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        ),
+        persist_directory=vectorstore_dir,
+    )
+    vector_store.add_documents(docs)
+    
+    
+
+
 @csrf_exempt
 def upload_pdf(request):
     global vector_store
     if request.method == "POST":
         try:
             pdf_file = request.FILES["file"]
-            relative_path = f"uploads/{pdf_file.name}"
+            relative_path = f"archivos/{pdf_file.name}"
             absolute_file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
 
             # Guardar archivo si no existe
@@ -137,6 +169,7 @@ def upload_pdf(request):
 
     return JsonResponse({"error": "Método no soportado"}, status=405)
 
+
 def file_hash(file_path):
     h = hashlib.sha256()
     with open(file_path, "rb") as f:
@@ -144,90 +177,219 @@ def file_hash(file_path):
             h.update(chunk)
     return h.hexdigest()
 
+
 @csrf_exempt
 @require_GET
 def listar_pdfs(request):
     # Filtrar por búsqueda si existe
-    query = request.GET.get('q', '')
+    query = request.GET.get("q", "")
     if query:
         pdfs = PDFDocument.objects.filter(titulo__icontains=query)
     else:
-        pdfs = PDFDocument.objects.all().order_by('-creado_en')
-    
+        pdfs = PDFDocument.objects.all().order_by("-creado_en")
+
     # Preparar los datos para JSON
     archivos_list = []
     for pdf in pdfs:
-        archivos_list.append({
-            'id': pdf.id,
-            'numero_caso': pdf.numero_caso,
-            'titulo': pdf.titulo,
-            'fecha': pdf.fecha.strftime('%Y-%m-%d') if pdf.fecha else None,
-            'tipo_documento': pdf.tipo_documento,
-            'jurisdiccion': pdf.jurisdiccion,
-            'pdf_url': request.build_absolute_uri(os.path.join(settings.MEDIA_URL, str(pdf.archivo_pdf))) if pdf.archivo_pdf else None,
-            'creado_en': pdf.creado_en.strftime('%Y-%m-%d %H:%M:%S') if pdf.creado_en else None
-        })
-    
+        archivos_list.append(
+            {
+                "id": pdf.id,
+                "numero_caso": pdf.numero_caso,
+                "titulo": pdf.titulo,
+                "fecha": pdf.fecha.strftime("%Y-%m-%d") if pdf.fecha else None,
+                "tipo_documento": pdf.tipo_documento,
+                "jurisdiccion": pdf.jurisdiccion,
+                "pdf_url": (
+                    request.build_absolute_uri(
+                        os.path.join(settings.MEDIA_URL, str(pdf.archivo_pdf))
+                    )
+                    if pdf.archivo_pdf
+                    else None
+                ),
+                "creado_en": (
+                    pdf.creado_en.strftime("%Y-%m-%d %H:%M:%S")
+                    if pdf.creado_en
+                    else None
+                ),
+            }
+        )
+
     response_data = {
-        'success': True,
-        'count': len(archivos_list),
-        'results': archivos_list,
-        'search_query': query
+        "success": True,
+        "count": len(archivos_list),
+        "results": archivos_list,
+        "search_query": query,
     }
-    
+
     return JsonResponse(response_data, safe=False)
+
 
 @csrf_exempt
 @require_POST
 def eliminar_pdf(request):
     """Elimina un PDF por ID"""
     try:
-        pdf_id = request.POST.get('id')
+        pdf_id = request.POST.get("id")
         if not pdf_id:
-            return JsonResponse({'error': 'ID no proporcionado'}, status=400)
+            return JsonResponse({"error": "ID no proporcionado"}, status=400)
 
         documento = PDFDocument.objects.get(id=pdf_id)
         documento.archivo_pdf.delete()  # Elimina el archivo físico
         documento.delete()  # Elimina el registro
 
-        return JsonResponse({'success': True})
+        return JsonResponse({"success": True})
 
     except PDFDocument.DoesNotExist:
-        return JsonResponse({'error': 'Documento no encontrado'}, status=404)
+        return JsonResponse({"error": "Documento no encontrado"}, status=404)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-@csrf_exempt
+        return JsonResponse({"error": str(e)}, status=500)
+
 @require_POST
+@csrf_exempt
 def consultar_pdf(request):
     try:
         data = json.loads(request.body)
-        pdf_id = data.get('pdf_id')
-        question = data.get('question')
-        
-        if not pdf_id or not question:
-            return JsonResponse({'error': 'Datos incompletos'}, status=400)
-        
-        # Obtener el documento PDF
-        pdf_doc = PDFDocument.objects.get(id=pdf_id)
-        pdf_path = os.path.join(settings.MEDIA_ROOT, str(pdf_doc.archivo_pdf))
-        
-        # Procesar el PDF y responder la pregunta (usando tu lógica existente)
-        reader = PdfReader(pdf_path)
-        text = ""
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-        
-        # Aquí usarías tu pipeline de LangChain para responder
-        state = {"question": question, "context": text, "answer": ""}
+        numero_caso = data.get("pdf_id")
+        pregunta = data.get("question")
+
+        if not numero_caso or not pregunta:
+            return JsonResponse({"error": "Faltan datos"}, status=400)
+
+        # Buscar el documento asociado
+        try:
+            documento = PDFDocument.objects.get(numero_caso=numero_caso)
+        except PDFDocument.DoesNotExist:
+            return JsonResponse({"error": "No se encontró el documento PDF"}, status=404)
+
+        # Cargar el vectorstore
+        vectorstore_dir = f"./chroma_dbs/{numero_caso}"
+        if not os.path.exists(vectorstore_dir):
+            return JsonResponse({"error": "No se encontró el vector store para ese caso"}, status=404)
+
+        vector_store = Chroma(
+            collection_name=f"collection_{numero_caso}",
+            embedding_function=HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2"
+            ),
+            persist_directory=vectorstore_dir,
+        )
+
+        # Ejecutar el grafo de razonamiento
+        state = {"question": pregunta, "context": [], "answer": ""}
         state = graph.invoke(state)
-        
-        print("DATAAAAAA");
-        print(state['answer']);
-        return JsonResponse({'answer': state['answer']})
-        
-    except PDFDocument.DoesNotExist:
-        return JsonResponse({'error': 'Documento no encontrado'}, status=404)
+
+        respuesta = state["answer"]
+
+        # Guardar la interacción
+        PDFInteraccion.objects.create(
+            pdf_document=documento,
+            prompt=pregunta,
+            respuesta=respuesta
+        )
+
+        return JsonResponse({"answer": respuesta})
+
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+@require_GET
+@csrf_exempt
+def obtener_interacciones(request, numero_caso):
+    try:
+        documento = PDFDocument.objects.get(numero_caso=numero_caso)
+        interacciones = PDFInteraccion.objects.filter(pdf_document=documento).order_by('creado_en')
+
+        data = {
+            "interacciones": [
+                {
+                    "prompt": i.prompt,
+                    "respuesta": i.respuesta,
+                    "fecha": i.creado_en.isoformat()
+                }
+                for i in interacciones
+            ]
+        }
+
+        return JsonResponse(data)
+
+    except PDFDocument.DoesNotExist:
+        return JsonResponse({"interacciones": []})    
+
+
+@require_POST
+@csrf_exempt
+def eliminar_pdf(request):
+    from django.views.decorators.csrf import csrf_exempt
+    import json
+
+    try:
+        data = json.loads(request.body)
+        pdf_id = data.get("pdf_id")
+        if not pdf_id:
+            return JsonResponse({"error": "ID no proporcionado"}, status=400)
+
+        pdf = PDFDocument.objects.get(id=pdf_id)
+
+        # Eliminar el archivo físico
+        if pdf.archivo_pdf and os.path.isfile(pdf.archivo_pdf.path):
+            os.remove(pdf.archivo_pdf.path)
+
+        # Eliminar de la BD
+        pdf.delete()
+
+        return JsonResponse({"success": True})
+    except PDFDocument.DoesNotExist:
+        return JsonResponse({"error": "PDF no encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    
+
+def obtener_pdf(request, pdf_id):
+    try:
+        pdf = PDFDocument.objects.get(id=pdf_id)
+        return JsonResponse({
+            'id': pdf.id,
+            'numero_caso': pdf.numero_caso,
+            'titulo': pdf.titulo,
+            'fecha': pdf.fecha.isoformat(),
+            'tipo_documento': pdf.tipo_documento,
+            'jurisdiccion': pdf.jurisdiccion,
+        })
+    except PDFDocument.DoesNotExist:
+        return JsonResponse({'error': 'PDF no encontrado'}, status=404)
+    
+
+@csrf_exempt
+@require_POST
+def editar_pdf(request):
+    try:
+        pdf_id = request.POST.get('pdf_id')
+        pdf = PDFDocument.objects.get(id=pdf_id)
+    except PDFDocument.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'PDF no encontrado'})
+
+    # Actualizar campos básicos
+    pdf.numero_caso = request.POST.get('numero_caso')
+    pdf.titulo = request.POST.get('titulo')
+    pdf.fecha = request.POST.get('fecha')
+    pdf.tipo_documento = request.POST.get('tipo_documento')
+    pdf.jurisdiccion = request.POST.get('jurisdiccion')
+
+    nuevo_pdf = request.FILES.get('archivo_pdf')
+    if nuevo_pdf:
+        # Eliminar vectorstore antiguo (solo si cambia el archivo)
+        vectorstore_dir = f"./chroma_dbs/{pdf.numero_caso}"
+        if os.path.exists(vectorstore_dir):
+            shutil.rmtree(vectorstore_dir)
+
+        # Guardar el nuevo archivo
+        pdf.archivo_pdf = nuevo_pdf
+
+    pdf.save()
+
+    # Volver a generar embeddings solo si hay un nuevo archivo
+    if nuevo_pdf:
+        guardar_vectorstore_para_pdf(pdf.archivo_pdf.path, pdf.numero_caso)
+
+    return JsonResponse({'success': True})

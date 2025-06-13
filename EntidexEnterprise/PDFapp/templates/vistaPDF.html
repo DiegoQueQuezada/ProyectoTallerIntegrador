@@ -1,0 +1,200 @@
+{% extends 'vistaPrincipal.html' %}
+{% load static %} <!-- ¡Esta línea es crucial! -->
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/vistaPDF.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/vistaPDF.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="table-toolbar">
+    <div class="search-container">
+        <input type="text" placeholder="Buscar..." class="search-input" id="searchInput">
+        <button class="search-button">
+            <ion-icon name="search-outline"></ion-icon>
+        </button>
+    </div>
+    <button class="add-new-button" onclick="openModal()">
+        <ion-icon name="add-outline"></ion-icon>
+        Agregar
+    </button>
+</div>
+
+<!-- Modal para registrar PDFs -->
+<div id="pdfModal" class="modal">
+    <div class="modal-content modalNuevoArchivo">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Registrar Nuevo PDF</h2>
+        <form id="pdfForm">
+            <div class="form-columns">
+                <div class="form-left">
+                    <div class="form-group">
+                        <label for="Numerodecaso">Número de Caso/Expediente:</label>
+                        <input type="text" id="Numerodecaso" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="titulo">Título</label>
+                        <input type="text" id="titulo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha">Fecha:</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                </div>
+
+                <div class="form-right">
+                    <div class="form-group">
+                        <label for="tipoDocumento">Tipo de documento:</label>
+                        <select id="tipoDocumento" name="tipoDocumento" required onchange="toggleOtherDocument()">
+                            <option value="">-- Seleccione un tipo --</option>
+                            <option value="demanda">Demanda</option>
+                            <option value="contrato">Contrato</option>
+                            <option value="recurso">Recurso</option>
+                            <option value="sentencia">Sentencia</option>
+                            <option value="escritura_publica">Escritura Pública</option>
+                            <option value="testamento">Testamento</option>
+                            <option value="poder_notarial">Poder Notarial</option>
+                            <option value="dictamen">Dictamen Jurídico</option>
+                            <option value="otro">Otro...</option>
+                        </select>
+                        <div id="otherDocumentContainer" class="other-document-container">
+                            <label for="otherDocument">Especificar tipo de documento:</label>
+                            <input type="text" id="otherDocument">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="jurisdiccion">Jurisdicción:</label>
+                        <select id="jurisdiccion" name="Jurisdiccion" required>
+                            <option value="">-- Seleccione una jurisdicción --</option>
+                            <option value="local">Local</option>
+                            <option value="nacional">Nacional</option>
+                            <option value="internacional">Internacional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdfFile">Archivo PDF:</label>
+                        <input type="file" id="pdfFile" accept=".pdf" required>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="submit-button" onclick="savePDF()">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para editar PDFs -->
+<div id="pdfModal_edit" class="modal">
+    <div class="modal-content modalNuevoArchivo">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Editando ....</h2>
+        <form id="pdfForm">
+            <div class="form-columns">
+                <div class="form-left">
+                    <input type="hidden" id="pdf_id_edit">
+                    <div class="form-group">
+                        <label for="Numerodecaso">Número de Caso/Expediente:</label>
+                        <input type="text" id="Numerodecaso_edit" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="titulo">Título</label>
+                        <input type="text" id="titulo_edit" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha">Fecha:</label>
+                        <input type="date" id="fecha_edit" required>
+                    </div>
+                </div>
+
+                <div class="form-right">
+                    <div class="form-group">
+                        <label for="tipoDocumento_edit">Tipo de documento:</label>
+                        <select id="tipoDocumento_edit" name="tipoDocumento" required onchange="toggleOtherDocument()">
+                            <option value="">-- Seleccione un tipo --</option>
+                            <option value="demanda">Demanda</option>
+                            <option value="contrato">Contrato</option>
+                            <option value="recurso">Recurso</option>
+                            <option value="sentencia">Sentencia</option>
+                            <option value="escritura_publica">Escritura Pública</option>
+                            <option value="testamento">Testamento</option>
+                            <option value="poder_notarial">Poder Notarial</option>
+                            <option value="dictamen">Dictamen Jurídico</option>
+                            <option value="otro">Otro...</option>
+                        </select>
+                        <div id="otherDocumentContainer_edit" class="other-document-container">
+                            <label for="otherDocument">Especificar tipo de documento:</label>
+                            <input type="text" id="otherDocument">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="jurisdiccion">Jurisdicción:</label>
+                        <select id="jurisdiccion_edit" name="Jurisdiccion" required>
+                            <option value="">-- Seleccione una jurisdicción --</option>
+                            <option value="local">Local</option>
+                            <option value="nacional">Nacional</option>
+                            <option value="internacional">Internacional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdfFile">Archivo PDF:</label>
+                        <input type="file" id="pdfFile_edit" accept=".pdf" required>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="submit-button" id="editarPDF">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de registros -->
+<div class="members-table">
+    <table id="pdfTable">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="5">No hay archivos registrados</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<!-- Modal para el chat de consultas -->
+<div id="chatModal" class="modal">
+    <div class="modal-content">
+        <div class="chat-header" id="chatHeader">
+            <h3 id="pdfTitle">Consulta sobre PDF</h3>
+            <div class="modal-controls">
+                <button class="modal-control-btn" onclick="toggleFullscreen()">
+                    <ion-icon name="expand-outline"></ion-icon>
+                </button>
+                <button class="modal-control-btn" onclick="minimizeChat()">
+                    <ion-icon name="remove-outline"></ion-icon>
+                </button>
+                <button class="modal-control-btn" onclick="closeChatModal()">
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+        </div>
+        <div class="chat-container" id="chatContainer">
+            <!-- Mensajes aparecerán aquí -->
+        </div>
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" id="userQuestion" placeholder="Escribe tu mensaje..." autocomplete="off">
+                <button class="send-button" onclick="sendQuestion()">
+                    <ion-icon name="send"></ion-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

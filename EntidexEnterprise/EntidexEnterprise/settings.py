@@ -79,15 +79,12 @@ WSGI_APPLICATION = "EntidexEnterprise.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "mssql",
-        "NAME": "BD_SistemaJuridico",
-        "USER": "sa",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "BD_GestionArchivosJuridicos",
+        "USER": "postgres",  # Cambia si usas otro usuario
         "PASSWORD": "mierda",  # Reemplaza con la real
-        "HOST": r"DESKTOP-HR37GPJ\QUEZADA",
-        "OPTIONS": {
-            "driver": "ODBC Driver 17 for SQL Server",
-            "trusted_connection": "yes",
-        },
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 

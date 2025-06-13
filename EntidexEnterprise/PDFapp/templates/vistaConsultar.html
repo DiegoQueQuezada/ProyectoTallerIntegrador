@@ -1,0 +1,36 @@
+{% extends 'vistaPrincipal.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/vistaConsultar.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/vistaConsultar.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir PDF</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Subir PDF y hacer preguntas</h1>
+        <form id="pdfForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="file">Selecciona un PDF:</label>
+            <input type="file" name="file" id="file" required>
+
+            <label for="question">Pregunta:</label>
+            <input type="text" name="question" id="question" placeholder="Escribe tu pregunta aquí" required>
+
+            <button type="submit" id="submitBtn">Subir y preguntar</button>
+        </form>
+
+        <h2>Respuesta</h2>
+        <div id="response"></div>
+    </div>
+</body>
+{% endblock %}
