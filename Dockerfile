@@ -27,6 +27,8 @@ COPY EntidexEnterprise/manage.py ./
 COPY EntidexEnterprise/EntidexEnterprise ./EntidexEnterprise/
 COPY EntidexEnterprise/PDFapp ./PDFapp/
 
-# Ejecutar servidor Django
-CMD sh -c "gunicorn --bind 0.0.0.0:$PORT EntidexEnterprise.wsgi:application"
+# Ejecutar collectstatic para producción
+RUN python manage.py collectstatic --noinput
 
+# Ejecutar servidor Django con Gunicorn
+CMD sh -c "gunicorn --bind 0.0.0.0:$PORT EntidexEnterprise.wsgi:application"

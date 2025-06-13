@@ -55,4 +55,7 @@ venv/
 # Ignorar archivos temporales o de sistema
 __pycache__/
 *.pyc
+EntidexEnterprise/staticfiles/
+EntidexEnterprise/static/
+EntidexEnterprise/__pycache__/
 
