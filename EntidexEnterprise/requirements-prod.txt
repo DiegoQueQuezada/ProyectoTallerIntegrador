@@ -63,7 +63,6 @@ humanfriendly==10.0
 idna==3.10
 importlib_metadata==8.7.0
 importlib_resources==6.5.2
-ipykernel==6.29.5
 ipython==8.18.1
 isoduration==20.11.0
 itsdangerous==2.2.0
@@ -104,7 +103,6 @@ nbconvert==7.16.6
 nbformat==5.10.4
 nest-asyncio==1.6.0
 networkx==3.2.1
-notebook==7.4.3
 notebook_shim==0.2.4
 numpy==2.0.2
 oauthlib==3.2.2
@@ -214,9 +212,9 @@ yarl==1.20.0
 zipp==3.22.0
 zstandard==0.23.0
 
+
 pexpect
 uvicorn
 fastapi
 # otros paquetes que sí funcionan en Linux
-pexpect
 ptyprocess
