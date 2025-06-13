@@ -28,4 +28,5 @@ COPY EntidexEnterprise/EntidexEnterprise ./EntidexEnterprise/
 COPY EntidexEnterprise/PDFapp ./PDFapp/
 
 # Ejecutar servidor Django
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "EntidexEnterprise.wsgi:application"]
+CMD sh -c "gunicorn --bind 0.0.0.0:$PORT EntidexEnterprise.wsgi:application"
+
