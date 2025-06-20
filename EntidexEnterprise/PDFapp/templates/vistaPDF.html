@@ -35,7 +35,7 @@
                 <div class="form-left">
                     <div class="form-group">
                         <label for="Numerodecaso">Número de Caso/Expediente:</label>
-                        <input type="text" id="Numerodecaso" required>
+                        <input type="text" id="Numerodecaso" maxlength="5" required>
                     </div>
                     <div class="form-group">
                         <label for="titulo">Título</label>
@@ -82,7 +82,7 @@
                     </div>
                 </div>
             </div>
-            <button type="button" class="submit-button" onclick="savePDF()">Guardar</button>
+            <button type="button" class="submit-button" onclick="guardarNuevoPDF()">Guardar</button>
         </form>
     </div>
 </div>
@@ -98,7 +98,7 @@
                     <input type="hidden" id="pdf_id_edit">
                     <div class="form-group">
                         <label for="Numerodecaso">Número de Caso/Expediente:</label>
-                        <input type="text" id="Numerodecaso_edit" required>
+                        <input type="text" id="Numerodecaso_edit" maxlength="5" required>
                     </div>
                     <div class="form-group">
                         <label for="titulo">Título</label>

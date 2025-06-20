@@ -28,8 +28,13 @@ SECRET_KEY = "django-insecure-nx!b)(1^x*ai-d2v9%t$%squt@r0_0*c#2jgg^=)z#a6eo$rlo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['proyectotallerintegrador-production.up.railway.app','127.0.0.1', 'localhost']
-
+ALLOWED_HOSTS = [
+    "proyectotallerintegrador-production.up.railway.app",
+    "127.0.0.1",
+    "localhost",
+    "e713-38-255-109-34.ngrok-free.app",
+    ".ngrok-free.app",
+]
 
 
 # Application definition
@@ -134,3 +139,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # importante para producci√
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = "PDFapp.Usuario"  # Reemplaza 'tuapp' con el nombre de tu app
+LOGIN_URL = "/login/"
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://e713-38-255-109-34.ngrok-free.app",
+    "https://*.ngrok-free.app",  # Para permitir cualquier subdominio de ngrok
+]
