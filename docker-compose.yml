@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: entidex_web
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    volumes:
+      - .:/app
+    depends_on:
+      - db  # solo si usarás PostgreSQL o algún servicio extra
+    restart: always
+
+  # Puedes quitar este bloque si no usas base de datos
+  db:
+    image: postgres:15
+    container_name: entidex_db
+    environment:
+      POSTGRES_DB: entidex
+      POSTGRES_USER: entidexuser
+      POSTGRES_PASSWORD: entidexpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data:
