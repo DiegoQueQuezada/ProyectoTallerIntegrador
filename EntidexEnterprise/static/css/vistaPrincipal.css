@@ -1,0 +1,40 @@
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  margin-right: 20px;
+}
+
+.user-info ion-icon {
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.username {
+  font-weight: bold;
+  color: #444;
+}
+
+.logout-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.logout-button:hover {
+  background-color: #c0392b;
+}
+
+#formSalir {
+  display: inline;
+  flex: 1;
+  justify-content: center;
+  display: flex;
+  justify-content: center;
+  align-items: end;
+}

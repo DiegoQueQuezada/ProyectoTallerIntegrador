@@ -56,6 +56,6 @@ venv/
 __pycache__/
 *.pyc
 EntidexEnterprise/staticfiles/
-EntidexEnterprise/static/
+
 EntidexEnterprise/__pycache__/
 
