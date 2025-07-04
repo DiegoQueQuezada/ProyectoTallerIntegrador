@@ -32,3 +32,53 @@
 .separator::after {
     right: 0;
 }
+/* Tamaño del modal */
+.modal-dialog {
+    max-width: 400px;
+    margin: 1.75rem auto;
+}
+
+/* Contenido del modal */
+.modal-content {
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Cabecera del modal */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+/* Título del modal */
+.modal-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* Campos del formulario */
+.modal-body .form-label {
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+}
+
+.modal-body .form-control {
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+}
+
+/* Botones del footer */
+.modal-footer .btn {
+    border-radius: 0.5rem;
+    min-width: 100px;
+}
+
+/* Responsive para pantallas muy pequeñas */
+@media (max-width: 480px) {
+    .modal-dialog {
+        max-width: 95%;
+    }
+}

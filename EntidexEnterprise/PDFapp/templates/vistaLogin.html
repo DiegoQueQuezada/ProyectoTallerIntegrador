@@ -36,6 +36,10 @@
             <button type="submit" class="btn btn-primary w-100">Entrar</button>
         </form>
 
+        <!-- Botón para abrir el modal de registro -->
+        <button type="button" class="btn btn-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#registroModal">
+            Registrarse
+        </button>
         <div class="separator">o</div>
 
         <a href="#" class="btn w-100 d-flex align-items-center justify-content-center gap-2 border shadow-sm py-2"
@@ -44,7 +48,49 @@
                 style="width: 20px; height: 20px;">
             <span>Continuar con Google</span>
         </a>
-     
+    </div>
+    <!-- Modal de Registro -->
+    <div class="modal fade" id="registroModal" tabindex="-1" aria-labelledby="registroModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registroModalLabel">Registro de Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label for="username_reg" class="form-label">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="username_reg" name="username" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="email" class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="dni" class="form-label">DNI</label>
+                        <input type="text" class="form-control" id="dni" name="dni" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="nombres" class="form-label">Nombres</label>
+                        <input type="text" class="form-control" id="nombres" name="nombres" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="apellidos" class="form-label">Apellidos</label>
+                        <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

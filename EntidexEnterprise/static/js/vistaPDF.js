@@ -591,7 +591,22 @@ function listarPDFs() {
 $(document).ready(function () {
     listarPDFs();
 });
+// Aceptar solo números en Numero de expediente
+document.getElementById('Numerodecaso').addEventListener('input', function (e) {
+    this.value = this.value.replace(/\D/g, ''); // Elimina todo lo que no sea dígito
+});
+// Evitar fechas futuras en el registro del PDF
+window.addEventListener('DOMContentLoaded', function () {
+    const inputFecha = document.getElementById('fecha');
+    
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Los meses empiezan desde 0
+    const dia = String(hoy.getDate()).padStart(2, '0');
 
+    const fechaActual = `${año}-${mes}-${dia}`;
+    inputFecha.max = fechaActual;
+});
 // Búsqueda en tiempo real
 document.getElementById("searchInput").addEventListener("input", function () {
     const searchTerm = this.value.toLowerCase();
