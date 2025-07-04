@@ -25,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.indexView, name="index"),
     path("", include("PDFapp.urls")),
+    path('accounts/', include('allauth.urls')),
 ] 
 
 if settings.DEBUG:
