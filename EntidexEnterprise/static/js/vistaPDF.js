@@ -1,79 +1,79 @@
-document
-    .querySelector("#pdfModal_edit #editarPDF")
-    .addEventListener("click", function () {
-        const form = document.getElementById("pdfForm");
-        const formData = new FormData();
+$(document).ready(function () {
+    iniciarDataTables();
+    iniciarEventosEstaticos();
+    listarPDFs();
+});
 
-        const pdfId = document.getElementById("pdf_id_edit").value;
-        formData.append("pdf_id", pdfId);
-        formData.append(
-            "numero_caso",
-            document.getElementById("Numerodecaso_edit").value
-        );
-        formData.append("titulo", document.getElementById("titulo_edit").value);
-        formData.append("fecha", document.getElementById("fecha_edit").value);
-        formData.append(
-            "tipo_documento",
-            document.getElementById("tipoDocumento_edit").value
-        );
-        formData.append(
-            "jurisdiccion",
-            document.getElementById("jurisdiccion_edit").value
-        );
+function iniciarEventosEstaticos() {
 
-        const fileInput = document.getElementById("pdfFile_edit");
-        if (fileInput.files.length > 0) {
-            formData.append("archivo_pdf", fileInput.files[0]);
+    $("#btnNuevoModal").on("click", function () {
+        modalNuevoPDF();
+    });
+
+    $('#pdfModal').on('hidden.bs.modal', function () {
+        $('#pdfForm')[0].reset(); // Limpia el formulario
+    });
+
+    $('#pdfModal_edit').on('hidden.bs.modal', function () {
+        $('#pdfForm_edit')[0].reset(); // Limpia el formulario
+    });
+
+}
+function iniciarDataTables() {
+    $('#pdfTable').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+        }
+    });
+}
+document.querySelector("#pdfModal_edit #editarPDF").addEventListener("click", function () {
+    const formData = new FormData();
+    const pdfId = document.getElementById("pdf_id_edit").value;
+    formData.append("pdf_id", pdfId);
+    formData.append("numero_caso", document.getElementById("Numerodecaso_edit").value);
+    formData.append("titulo", document.getElementById("titulo_edit").value);
+    formData.append("fecha", document.getElementById("fecha_edit").value);
+    formData.append("tipo_documento", document.getElementById("tipoDocumento_edit").value);
+    formData.append("jurisdiccion", document.getElementById("jurisdiccion_edit").value);
+    const fileInput = document.getElementById("pdfFile_edit");
+
+    if (fileInput.files.length > 0) {
+        formData.append("archivo_pdf", fileInput.files[0]);
+    }
+
+    fetch("/editar-pdf/", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+        },
+        body: formData,
+    }).then((res) => res.json()).then((data) => {
+
+        if (data.success) {
+            Swal.fire(
+                "✅ Actualizado",
+                "PDF editado correctamente",
+                "success"
+            ).then(() => {
+                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('pdfModal_edit'));
+                modal.hide();
+                location.reload();
+            });
+        } else {
+            Swal.fire("❌ Error", data.error || "Ocurrió un error al editar", "error");
         }
 
-        fetch("/editar-pdf/", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": getCSRFToken(),
-            },
-            body: formData,
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.success) {
-                    Swal.fire(
-                        "✅ Actualizado",
-                        "PDF editado correctamente",
-                        "success"
-                    ).then(() => {
-                        closeModal(); // ocultar modal
-                        location.reload(); // o refrescar lista
-                    });
-                } else {
-                    Swal.fire(
-                        "❌ Error",
-                        data.error || "Ocurrió un error al editar",
-                        "error"
-                    );
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-                Swal.fire("❌ Error", "Error de red", "error");
-            });
+    }).catch((error) => {
+
+        console.error(error);
+        Swal.fire("❌ Error", "Error de red", "error");
     });
-
-// Espera a que jQuery esté completamente cargado
-document.addEventListener("DOMContentLoaded", function () {
-    $(document).ready(function () {
-        $('#pdfTable').DataTable({
-            paging: true,
-            searching: true,
-            ordering: true,
-            language: {
-                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-            }
-        });
-        listarPDFs();
-    });
-
-
 });
+
+
 
 // Variables globales para el chat
 let currentPdfId = null;
@@ -85,14 +85,14 @@ let originalWidth, originalHeight, originalX, originalY;
 let isFullscreen = false;
 
 function initDragAndResize() {
+
     const modal = document.getElementById("chatModal");
-    const modalContent = document
-        .getElementById("chatModal")
-        .querySelector(".modal-content");
+    const modalContent = document.getElementById("chatModal").querySelector(".modal-content");
     const header = document.getElementById("chatHeader");
     modal.style.display = "block";
     modalContent.style.display = "flex";
     // Arrastrar
+
     header.addEventListener("mousedown", startDrag);
     document.addEventListener("mousemove", drag);
     document.addEventListener("mouseup", stopDrag);
@@ -103,31 +103,32 @@ function initDragAndResize() {
 
 // Funciones para arrastrar
 function startDrag(e) {
+
     const header = document.getElementById("chatHeader");
 
     // Solo arrastrar si el click fue dentro del header
+
     if (!header.contains(e.target)) return;
 
     const modal = document.getElementById("chatModal");
     isDragging = true;
     offsetX = e.clientX - modal.getBoundingClientRect().left;
-    console.log("X", offsetX);
     offsetY = e.clientY - modal.getBoundingClientRect().top;
-    console.log("Y", offsetY);
     modal.style.cursor = "grabbing";
 }
 
 function startDrag(e) {
-    if (
-        e.target.tagName === "INPUT" ||
-        e.target.tagName === "BUTTON" ||
-        e.target.tagName === "ION-ICON"
-    )
+
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON" || e.target.tagName === "ION-ICON") {
         return;
+    };
 
     // Solo permitir arrastrar desde el encabezado
+
     const header = document.getElementById("chatHeader");
-    if (!header.contains(e.target)) return;
+    if (!header.contains(e.target)) {
+        return;
+    }
 
     const modal = document.getElementById("chatModal");
     isDragging = true;
@@ -140,10 +141,29 @@ function drag(e) {
     if (!isDragging || isResizing) return;
 
     const modal = document.getElementById("chatModal");
-    modal.style.left = e.clientX - offsetX + "px";
-    modal.style.top = e.clientY - offsetY + "px";
+
+    // Tamaños del modal
+    const modalWidth = modal.offsetWidth;
+    const modalHeight = modal.offsetHeight;
+
+    // Tamaño de la ventana
+    const maxLeft = window.innerWidth - modalWidth;
+    const maxTop = window.innerHeight - modalHeight;
+
+    // Posiciones calculadas
+    let newLeft = e.clientX - offsetX;
+    let newTop = e.clientY - offsetY;
+
+    // Limitar dentro del viewport
+    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    newTop = Math.max(0, Math.min(newTop, maxTop));
+
+    // Aplicar posición
+    modal.style.left = newLeft + "px";
+    modal.style.top = newTop + "px";
     modal.style.transform = "none";
 }
+
 
 function stopDrag() {
     isDragging = false;
@@ -177,11 +197,17 @@ function stopResize() {
     document.removeEventListener("mousemove", resize);
 }
 // Función para abrir el modal de chat
-function openChatModal(pdfNumeroCaso, title, pdfId) {
+function openChatModal(pdfNumeroCaso, title) {
+
     currentPdfId = pdfNumeroCaso;
     currentPdfTitle = title;
     const modal = document.getElementById("chatModal");
 
+    // Establecer tamaño inicial
+    modal.style.width = "600px";
+    modal.style.height = "600px";
+
+    // Centrado si no está posicionado
     if (!modal.style.left || !modal.style.top) {
         modal.style.left = "50%";
         modal.style.top = "50%";
@@ -197,6 +223,7 @@ function openChatModal(pdfNumeroCaso, title, pdfId) {
     listarInteraccion(pdfNumeroCaso);
     initDragAndResize();
 }
+
 
 // Función para cerrar el modal de chat
 function closeChatModal() {
@@ -215,10 +242,6 @@ function sendQuestion() {
     // Añadir pregunta del usuario al chat
     addMessageToChat(question, "user");
     questionInput.value = "";
-
-    // Mostrar indicador de "escribiendo..."
-    const typingIndicator = showTypingIndicator();
-
     // Enviar pregunta al backend
     fetch("/consultar-pdf/", {
         method: "POST",
@@ -318,27 +341,32 @@ function getCookie(name) {
 // Función para minimizar el chat
 function minimizeChat() {
     const modal = document.getElementById("chatModal");
-    if (modal.style.height === "40px") {
-        // Restaurar tamaño
-        modal.style.height = originalHeight || "500px";
-        modal.style.width = originalWidth || "400px";
-        document.querySelector(".chat-container").style.display = "flex";
-        document.querySelector(".chat-input-container").style.display = "block";
-    } else {
-        // Guardar tamaño actual y minimizar
-        originalHeight = modal.style.height;
-        originalWidth = modal.style.width;
-        modal.style.height = "40px";
-        modal.style.width = "300px";
-        document.querySelector(".chat-container").style.display = "none";
-        document.querySelector(".chat-input-container").style.display = "none";
-    }
+
+    // Restaurar a los valores originales si existen
+    modal.style.width = originalWidth || "400px";
+    modal.style.height = originalHeight || "500px";
+    modal.style.left = originalX || "50%";
+    modal.style.top = originalY || "50%";
+    modal.style.transform = originalX ? "none" : "translate(-50%, -50%)";
+
+    // Asegurarse de quitar modo fullscreen
+    modal.classList.remove("fullscreen");
 }
+
 
 // Función para alternar pantalla completa
 function toggleFullscreen() {
-    const modal = document.getElementById("chatModal");
-    if (isFullscreen) {
+    const modal = $("#chatModal").get(0);
+    const modalChat = $("#chatModal .modal-content").get(0);
+    const computedStyle = window.getComputedStyle(modalChat);
+    const width = computedStyle.width;
+    const height = computedStyle.height;
+
+    // Detectar si ya está en pantalla completa (por tamaño)
+    const isCurrentlyFullscreen = width === "100vw" && height === "100vh";
+
+    if (isCurrentlyFullscreen) {
+        console.log("saliendo de  fuulscren")
         // Salir de pantalla completa
         modal.classList.remove("fullscreen");
         modal.style.width = originalWidth || "400px";
@@ -347,16 +375,21 @@ function toggleFullscreen() {
         modal.style.top = originalY || "50%";
         modal.style.transform = originalX ? "none" : "translate(-50%, -50%)";
     } else {
+        console.log("entrando a fullscreen")
         // Entrar en pantalla completa
         originalWidth = modal.style.width;
         originalHeight = modal.style.height;
         originalX = modal.style.left;
         originalY = modal.style.top;
+        modal.style.width = "100%";
+        modal.style.height = "100%";
+        modal.style.left = "0";
+        modal.style.top = "0";
         modal.classList.add("fullscreen");
         modal.style.transform = "none";
     }
-    isFullscreen = !isFullscreen;
 }
+
 // Permitir enviar pregunta con Enter
 document
     .getElementById("userQuestion")
@@ -365,36 +398,33 @@ document
             sendQuestion();
         }
     });
-// Funciones JavaScript
-function openModal() {
-    document.getElementById("pdfModal").style.display = "block";
 
-    $("#Numerodecaso_edit").off().on("input", function () {
+
+// Funciones JavaScript
+function modalNuevoPDF(config) {
+
+
+    let modal = new bootstrap.Modal(document.getElementById('pdfModal'));
+    modal.show();
+
+    $("#Numerodecaso").off().on("input", function () {
         let valor = $(this).val();
-        let error = "";
-        // Validar longitud
-        if (valor.length > 5) {
-            error = "Máximo 5 caracteres permitidos.";
-            $(this).val(valor.slice(0, 5)); // Recorta si sobrepasa
+
+        // Elimina cualquier caracter no numérico
+        valor = valor.replace(/\D/g, "");
+        // Limita a 10 dígitos
+        if (valor.length > 10) {
+            valor = valor.slice(0, 5);
         }
-        // Validar que sea numérico (opcional)
-        if (!/^\d*$/.test(valor)) {
-            error = "Solo se permiten números.";
-        }
-        $("#error_numero").text(error);
+        // Actualiza el valor del input
+        $(this).val(valor);
     });
+
     $("#titulo").val("");
     $("#fecha").val("");
     $("#tipoDocumento").val("");
     $("#jurisdiccion").val("");
 
-}
-
-function closeModal() {
-    document.getElementById("pdfModal_edit").style.display = "none";
-    document.getElementById("pdfModal").style.display = "none";
-    document.getElementById("pdfForm").reset();
-    document.getElementById("otherDocumentContainer").style.display = "none";
 }
 
 function toggleOtherDocument() {
@@ -428,35 +458,39 @@ function guardarNuevoPDF() {
     formData.append("jurisdiccion", document.getElementById("jurisdiccion").value);
     formData.append("archivo_pdf", document.getElementById("pdfFile").files[0]);
 
-    fetch("/guardar-pdf/", {
-        method: "POST",
-        body: formData,
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            // Ocultar spinner
-            document.getElementById("spinnerCarga").classList.add("d-none");
+    $.ajax({
+        url: "/guardar-pdf/",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $("#spinnerCarga").addClass("d-none");
 
             if (data.error) {
                 Swal.fire("Error", data.error, "error");
             } else {
-                Swal.fire("Exitoso", "Archivo correctamente guardado", "success");
+                Swal.fire("Exitoso", data.mensaje || "Archivo guardado correctamente", "success");
                 listarPDFs();
-                closeModal();
+                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('pdfModal'));
+                modal.hide();
             }
-        })
-        .catch(async (error) => {
-            document.getElementById("spinnerCarga").classList.add("d-none");
+        },
+        error: function (xhr) {
+            $("#spinnerCarga").addClass("d-none");
 
-            let mensajeError = "Ocurrió un error inesperado.";
+            let mensajeError = "Ocurrió un error inesperado al guardar.";
 
             try {
-                const data = await error.response.json();
-                mensajeError = data.error || mensajeError;
+                const data = xhr.responseJSON;
+                if (data && data.error) {
+                    mensajeError = data.error;
+                }
             } catch (e) { }
 
             Swal.fire("Error", mensajeError, "error");
-        });
+        }
+    });
 }
 
 
@@ -550,14 +584,7 @@ function listarPDFs() {
 
         tabla.clear(); // Limpia filas previas
 
-        if (data.results.length === 0) {
-            tabla.row.add([
-                'No hay archivos registrados',
-                '',
-                ''
-            ]).draw();
-            return;
-        }
+
 
         const filas = data.results.map((doc) => [
             doc.titulo,
@@ -570,7 +597,7 @@ function listarPDFs() {
                 <button class="action-button consult" onclick="openChatModal('${doc.numero_caso}', '${doc.titulo.replace(/'/g, "\\'")}', '${doc.id}')">
                     <ion-icon name="chatbox-outline"></ion-icon>
                 </button>
-                <button class="action-button edit" onclick="editarPDF('${doc.id}')">
+                <button class="action-button edit" onclick="modalEditarPDF('${doc.id}')">
                     <ion-icon name="create-outline"></ion-icon>
                 </button>
                 <button class="action-button delete" onclick="eliminarPDF(this, '${doc.id}')">
@@ -591,32 +618,8 @@ function listarPDFs() {
 $(document).ready(function () {
     listarPDFs();
 });
-// Aceptar solo números en Numero de expediente
-document.getElementById('Numerodecaso').addEventListener('input', function (e) {
-    this.value = this.value.replace(/\D/g, ''); // Elimina todo lo que no sea dígito
-});
-// Evitar fechas futuras en el registro del PDF
-window.addEventListener('DOMContentLoaded', function () {
-    const inputFecha = document.getElementById('fecha');
-    
-    const hoy = new Date();
-    const año = hoy.getFullYear();
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Los meses empiezan desde 0
-    const dia = String(hoy.getDate()).padStart(2, '0');
 
-    const fechaActual = `${año}-${mes}-${dia}`;
-    inputFecha.max = fechaActual;
-});
-// Búsqueda en tiempo real
-document.getElementById("searchInput").addEventListener("input", function () {
-    const searchTerm = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#tableBody tr");
 
-    rows.forEach((row) => {
-        const title = row.cells[0].textContent.toLowerCase();
-        row.style.display = title.includes(searchTerm) ? "" : "none";
-    });
-});
 $("#pdfForm").on("submit", function (e) {
     e.preventDefault();
 
@@ -681,27 +684,30 @@ function getCSRFToken() {
     return "";
 }
 
-function editarPDF(pdfId) {
-    fetch(`/api/obtener-pdf/${pdfId}/`)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error("No se pudo obtener el PDF");
-            }
-            return response.json();
-        })
-        .then((data) => {
-            document.getElementById("pdf_id_edit").value = data.id;
-            document.getElementById("Numerodecaso_edit").value = data.numero_caso;
-            document.getElementById("titulo_edit").value = data.titulo;
-            document.getElementById("fecha_edit").value = data.fecha;
-            document.getElementById("tipoDocumento_edit").value = data.tipo_documento;
-            document.getElementById("jurisdiccion_edit").value = data.jurisdiccion;
 
-            // Mostrar el modal
-            document.getElementById("pdfModal_edit").style.display = "block";
-        })
-        .catch((error) => {
-            console.error("Error al obtener PDF:", error);
-            Swal.fire("❌ Error", error.message || "No se pudo cargar el PDF.");
-        });
+
+function modalEditarPDF(pdfId) {
+
+    $.ajax({
+        url: `/api/obtener-pdf/${pdfId}/`,
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            $('#pdf_id_edit').val(data.id);
+            $('#Numerodecaso_edit').val(data.numero_caso);
+            $('#titulo_edit').val(data.titulo);
+            $('#fecha_edit').val(data.fecha);
+            $('#tipoDocumento_edit').val(data.tipo_documento);
+            $('#jurisdiccion_edit').val(data.jurisdiccion);
+
+            // Mostrar el modal Bootstrap
+            const modal = new bootstrap.Modal(document.getElementById('pdfModal_edit'));
+            modal.show();
+        },
+        error: function (xhr) {
+            console.error("Error al obtener PDF:", xhr);
+            Swal.fire("❌ Error", xhr.responseJSON?.message || "No se pudo cargar el PDF.");
+        }
+    });
+
 }

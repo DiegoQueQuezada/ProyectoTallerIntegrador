@@ -113,3 +113,17 @@ def construir_graph_con(vector_store: Chroma) -> Runnable:
     graph_builder.add_edge(START, "retrieve")
     return graph_builder.compile()
 
+
+def construir_graph_auxiliar() -> Runnable:
+    def generate(state: State) -> dict:
+        print("🧠 [AUXILIAR] Generando respuesta SOLO con el contexto dado...")
+        docs_content = "\n\n".join(doc for doc in state["context"])  # Aquí context es lista de strings
+        question_es = state["question"] + "\nPor favor responde en español."
+        messages = prompt.invoke({"question": question_es, "context": docs_content})
+        response = llm.invoke(messages)
+        print("✅ [AUXILIAR] Respuesta generada.")
+        return {"answer": response.content}
+
+    graph_builder = StateGraph(State).add_sequence([generate])
+    graph_builder.add_edge(START, "generate")
+    return graph_builder.compile()

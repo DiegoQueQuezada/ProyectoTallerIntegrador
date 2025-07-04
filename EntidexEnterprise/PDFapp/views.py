@@ -29,6 +29,7 @@ import os
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+import re
 
 
 @login_required
@@ -126,34 +127,51 @@ def loginView(request):
     return render(request, "vistaLogin.html")
 
 
-
 def guardar_vectorstore_para_pdf(archivo_path, numero_caso):
     vectorstore_dir = f"./chroma_dbs/{numero_caso}"
     os.makedirs(vectorstore_dir, exist_ok=True)
 
-    # Intentar extraer texto con PyPDF2
-    reader = PdfReader(archivo_path)
-    text = ""
-    for page in reader.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text += page_text + "\n"
-
-    # Si no hay texto, usar OCR
-    if not text.strip():
-        print("Usando OCR porque no se encontró texto en el PDF.")
-        imagenes = convert_from_path(archivo_path)
-        ocr_text = ""
-        for img in imagenes:
-            ocr_text += pytesseract.image_to_string(img, lang="spa") + "\n"
-        text = ocr_text
-
-    if not text.strip():
-        raise ValueError("No se pudo extraer texto del PDF, ni con OCR.")
-
-    # Crear documentos para embeddings
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-    docs = splitter.split_documents([Document(page_content=text)])
+    docs = []
+
+    reader = PdfReader(archivo_path)
+    num_paginas = len(reader.pages)
+    imagenes = convert_from_path(archivo_path, dpi=400, fmt="jpeg")
+
+    for i, page in enumerate(reader.pages):
+        # --- TEXTO DIGITAL ---
+        page_text = page.extract_text()
+        if page_text and page_text.strip():
+            chunks = splitter.split_text(page_text)
+            print(f"[DEBUG] Página {i+1} - Texto extraído:")
+            print(page_text)
+            print(f"[DEBUG] Página {i+1} - Chunks generados:")
+            for idx, chunk in enumerate(chunks):
+                print(f"Chunk {idx+1}:\n{chunk}\n{'-'*40}")
+                docs.append(Document(
+                    page_content=f"textoGeneral: {chunk}",
+                    metadata={"pagina": i + 1, "fuente": "digital"}
+                ))
+        # --- OCR SIEMPRE ---
+        try:
+            img = imagenes[i]
+            texto_pagina_ocr = pytesseract.image_to_string(img, lang="spa")
+            print(f"[DEBUG] OCR Página {i+1} - Texto extraído:")
+            print(texto_pagina_ocr)
+            if texto_pagina_ocr.strip():
+                chunks_ocr = splitter.split_text(texto_pagina_ocr)
+                print(f"[DEBUG] OCR Página {i+1} - Chunks generados:")
+                for idx, chunk in enumerate(chunks_ocr):
+                    print(f"Chunk OCR {idx+1}:\n{chunk}\n{'-'*40}")
+                    docs.append(Document(
+                        page_content=f"imagen: {chunk}",
+                        metadata={"pagina": i + 1, "fuente": "ocr_tesseract"}
+                    ))
+        except Exception as e:
+            print(f"⚠️ Error en OCR página {i+1}: {e}")
+
+    if not docs:
+        raise ValueError("❌ No se pudo extraer texto del PDF, ni con OCR.")
 
     # Crear el vectorstore
     vector_store = Chroma(
@@ -165,6 +183,22 @@ def guardar_vectorstore_para_pdf(archivo_path, numero_caso):
     )
 
     vector_store.add_documents(docs)
+    with open(os.path.join(vectorstore_dir, "metadata.json"), "w", encoding="utf-8") as f:
+        json.dump({"total_paginas": num_paginas}, f)
+
+    print(f"✅ Embeddings guardados en: {vectorstore_dir} (Total chunks: {len(docs)})")
+
+    # Responder preguntas tipo "de que trata la pagina X"
+    for i in range(num_paginas):
+        pregunta = f"de que trata la pagina {i+1}"
+        # Buscar los chunks de esa página
+        pagina_chunks = [doc.page_content for doc in docs if doc.metadata.get("pagina") == i+1]
+        print(f"[DEBUG] Pregunta: '{pregunta}'")
+        print(f"[DEBUG] Chunks usados para la respuesta:")
+        for idx, chunk in enumerate(pagina_chunks):
+            print(f"Chunk {idx+1}:\n{chunk}\n{'-'*40}")
+        # Aquí podrías invocar el modelo si quieres una respuesta automática
+        # Por ahora solo loguea los chunks que se usarían
 
 
 @login_required
@@ -325,6 +359,7 @@ def listar_pdfs(request):
 #     except Exception as e:
 #         return JsonResponse({"error": str(e)}, status=500)
 
+from .langchain_pipeline import construir_graph_auxiliar
 
 @login_required
 @require_POST
@@ -359,18 +394,40 @@ def consultar_pdf(request):
             persist_directory=vectorstore_dir,
         )
 
+        # Detectar si la pregunta pide una página específica
+        match = re.search(r"p[aá]gina[s]? (\d+)", pregunta, re.IGNORECASE)
+        context = []
+        if match:
+            pagina = int(match.group(1))
+            docs = vector_store.get(where={"pagina": pagina})
+            if docs and "documents" in docs and len(docs["documents"]) > 0:
+                context = docs["documents"]  # Lista de strings (chunks)
+                print(f"[DEBUG] Chunks extraídos para página {pagina}:")
+                for idx, chunk in enumerate(context):
+                    print(f"Chunk {idx+1}:\n{chunk}\n{'-'*40}")
+                # Usar grafo auxiliar SOLO con estos chunks
+                graph_aux = construir_graph_auxiliar()
+                state = {"question": pregunta, "context": context, "answer": ""}
+                state = graph_aux.invoke(state)
+                respuesta = state["answer"]
+                # ...guardar y devolver respuesta...
+                PDFInteraccion.objects.create(
+                    pdf_document=documento, prompt=pregunta, respuesta=respuesta
+                )
+                return JsonResponse({"answer": respuesta})
+            
         # 💡 Construir el grafo con este vector_store específico
         graph = construir_graph_con(vector_store)
 
-        state = {"question": pregunta, "context": [], "answer": ""}
+        state = {"question": pregunta, "context": context, "answer": ""}
         state = graph.invoke(state)
 
         respuesta = state["answer"]
-
+        print("RESPUESTA")
+        print(respuesta)
         PDFInteraccion.objects.create(
             pdf_document=documento, prompt=pregunta, respuesta=respuesta
         )
-
         return JsonResponse({"answer": respuesta})
 
     except Exception as e:

@@ -13,139 +13,172 @@
 
 
 <div class="table-toolbar">
-    <div class="search-container">
-        <h2 style="color: black; margin: 0;">Documentos PDF</h2>
-    </div>
-    <button class="add-new-button" onclick="openModal()">
+
+    <button type="button" class="btn btn-primary" id="btnNuevoModal">
         <ion-icon name="add-outline"></ion-icon>
-        Agregar
+        Nuevo PDF
     </button>
 </div>
 
 <!-- Modal para registrar PDFs -->
-<div id="pdfModal" class="modal">
-    <div class="modal-content modalNuevoArchivo">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h2>Registrar Nuevo PDF</h2>
-        <form id="pdfForm">
-            <div class="form-columns">
-                <div class="form-left">
-                    <div class="form-group">
-                        <label for="Numerodecaso">Número de Caso/Expediente:</label>
-                        <input type="text" id="Numerodecaso" maxlength="5" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="titulo">Título</label>
-                        <input type="text" id="titulo" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="fecha">Fecha:</label>
-                        <input type="date" id="fecha" required>
-                    </div>
-                </div>
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
 
-                <div class="form-right">
-                    <div class="form-group">
-                        <label for="tipoDocumento">Tipo de documento:</label>
-                        <select id="tipoDocumento" name="tipoDocumento" required onchange="toggleOtherDocument()">
-                            <option value="">-- Seleccione un tipo --</option>
-                            <option value="demanda">Demanda</option>
-                            <option value="contrato">Contrato</option>
-                            <option value="recurso">Recurso</option>
-                            <option value="sentencia">Sentencia</option>
-                            <option value="escritura_publica">Escritura Pública</option>
-                            <option value="testamento">Testamento</option>
-                            <option value="poder_notarial">Poder Notarial</option>
-                            <option value="dictamen">Dictamen Jurídico</option>
-                            <option value="otro">Otro...</option>
-                        </select>
-                        <div id="otherDocumentContainer" class="other-document-container">
-                            <label for="otherDocument">Especificar tipo de documento:</label>
-                            <input type="text" id="otherDocument">
+            <!-- Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfModalLabel">Registrar Nuevo PDF</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <form id="pdfForm">
+                    <div class="row">
+                        <!-- Columna izquierda -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Numerodecaso" class="form-label">Número de Caso/Expediente:</label>
+                                <input type="text" id="Numerodecaso" class="form-control" maxlength="10" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="titulo" class="form-label">Título</label>
+                                <input type="text" id="titulo" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fecha" class="form-label">Fecha:</label>
+                                <input type="date" id="fecha" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <!-- Columna derecha -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipoDocumento" class="form-label">Tipo de documento:</label>
+                                <select id="tipoDocumento" name="tipoDocumento" class="form-select" required
+                                    onchange="toggleOtherDocument()">
+                                    <option value="">-- Seleccione un tipo --</option>
+                                    <option value="demanda">Demanda</option>
+                                    <option value="contrato">Contrato</option>
+                                    <option value="recurso">Recurso</option>
+                                    <option value="sentencia">Sentencia</option>
+                                    <option value="escritura_publica">Escritura Pública</option>
+                                    <option value="testamento">Testamento</option>
+                                    <option value="poder_notarial">Poder Notarial</option>
+                                    <option value="dictamen">Dictamen Jurídico</option>
+                                    <option value="otro">Otro...</option>
+                                </select>
+                            </div>
+
+                            <div id="otherDocumentContainer" class="mb-3 d-none">
+                                <label for="otherDocument" class="form-label">Especificar tipo de documento:</label>
+                                <input type="text" id="otherDocument" class="form-control">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="jurisdiccion" class="form-label">Jurisdicción:</label>
+                                <select id="jurisdiccion" name="Jurisdiccion" class="form-select" required>
+                                    <option value="">-- Seleccione una jurisdicción --</option>
+                                    <option value="local">Local</option>
+                                    <option value="nacional">Nacional</option>
+                                    <option value="internacional">Internacional</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pdfFile" class="form-label">Archivo PDF:</label>
+                                <input type="file" id="pdfFile" class="form-control" accept=".pdf" required>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="jurisdiccion">Jurisdicción:</label>
-                        <select id="jurisdiccion" name="Jurisdiccion" required>
-                            <option value="">-- Seleccione una jurisdicción --</option>
-                            <option value="local">Local</option>
-                            <option value="nacional">Nacional</option>
-                            <option value="internacional">Internacional</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="pdfFile">Archivo PDF:</label>
-                        <input type="file" id="pdfFile" accept=".pdf" required>
-                    </div>
-                </div>
+                </form>
             </div>
-            <button type="button" class="submit-button" onclick="guardarNuevoPDF()">Guardar</button>
-        </form>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarNuevoPDF()">Guardar</button>
+            </div>
+
+        </div>
     </div>
 </div>
 
-<!-- Modal para editar PDFs -->
-<div id="pdfModal_edit" class="modal">
-    <div class="modal-content modalNuevoArchivo">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h2>Editando ....</h2>
-        <form id="pdfForm">
-            <div class="form-columns">
-                <div class="form-left">
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="pdfModal_edit" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfModalLabel">Editando...</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="pdfForm_edit">
                     <input type="hidden" id="pdf_id_edit">
-                    <div class="form-group">
-                        <label for="Numerodecaso">Número de Caso/Expediente:</label>
-                        <input type="text" id="Numerodecaso_edit" maxlength="5" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="titulo">Título</label>
-                        <input type="text" id="titulo_edit" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="fecha">Fecha:</label>
-                        <input type="date" id="fecha_edit" required>
-                    </div>
-                </div>
+                    <div class="row">
+                        <!-- Columna izquierda -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="Numerodecaso_edit" class="form-label">Número de Caso/Expediente:</label>
+                                <input type="text" id="Numerodecaso_edit" class="form-control" maxlength="10" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="titulo_edit" class="form-label">Título:</label>
+                                <input type="text" id="titulo_edit" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fecha_edit" class="form-label">Fecha:</label>
+                                <input type="date" id="fecha_edit" class="form-control" required>
+                            </div>
+                        </div>
 
-                <div class="form-right">
-                    <div class="form-group">
-                        <label for="tipoDocumento_edit">Tipo de documento:</label>
-                        <select id="tipoDocumento_edit" name="tipoDocumento" required onchange="toggleOtherDocument()">
-                            <option value="">-- Seleccione un tipo --</option>
-                            <option value="demanda">Demanda</option>
-                            <option value="contrato">Contrato</option>
-                            <option value="recurso">Recurso</option>
-                            <option value="sentencia">Sentencia</option>
-                            <option value="escritura_publica">Escritura Pública</option>
-                            <option value="testamento">Testamento</option>
-                            <option value="poder_notarial">Poder Notarial</option>
-                            <option value="dictamen">Dictamen Jurídico</option>
-                            <option value="otro">Otro...</option>
-                        </select>
-                        <div id="otherDocumentContainer_edit" class="other-document-container">
-                            <label for="otherDocument">Especificar tipo de documento:</label>
-                            <input type="text" id="otherDocument">
+                        <!-- Columna derecha -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tipoDocumento_edit" class="form-label">Tipo de documento:</label>
+                                <select id="tipoDocumento_edit" class="form-select" required
+                                    onchange="toggleOtherDocument()">
+                                    <option value="">-- Seleccione un tipo --</option>
+                                    <option value="demanda">Demanda</option>
+                                    <option value="contrato">Contrato</option>
+                                    <option value="recurso">Recurso</option>
+                                    <option value="sentencia">Sentencia</option>
+                                    <option value="escritura_publica">Escritura Pública</option>
+                                    <option value="testamento">Testamento</option>
+                                    <option value="poder_notarial">Poder Notarial</option>
+                                    <option value="dictamen">Dictamen Jurídico</option>
+                                    <option value="otro">Otro...</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 d-none" id="otherDocumentContainer_edit">
+                                <label for="otherDocument" class="form-label">Especificar tipo de documento:</label>
+                                <input type="text" id="otherDocument" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label for="jurisdiccion_edit" class="form-label">Jurisdicción:</label>
+                                <select id="jurisdiccion_edit" class="form-select" required>
+                                    <option value="">-- Seleccione una jurisdicción --</option>
+                                    <option value="local">Local</option>
+                                    <option value="nacional">Nacional</option>
+                                    <option value="internacional">Internacional</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pdfFile_edit" class="form-label">Archivo PDF:</label>
+                                <input type="file" id="pdfFile_edit" class="form-control" accept=".pdf" required>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="jurisdiccion">Jurisdicción:</label>
-                        <select id="jurisdiccion_edit" name="Jurisdiccion" required>
-                            <option value="">-- Seleccione una jurisdicción --</option>
-                            <option value="local">Local</option>
-                            <option value="nacional">Nacional</option>
-                            <option value="internacional">Internacional</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="pdfFile">Archivo PDF:</label>
-                        <input type="file" id="pdfFile_edit" accept=".pdf" required>
-                    </div>
-                </div>
+                </form>
             </div>
-            <button type="button" class="submit-button" id="editarPDF">Guardar</button>
-        </form>
+            <div class="modal-footer">
+                <button type="button" id="editarPDF" class="btn btn-primary">Guardar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
     </div>
 </div>
+
 
 <!-- Tabla de registros -->
 <div class="members-table">
@@ -192,8 +225,7 @@
     </div>
 </div>
 <div id="spinnerCarga"
-    class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75"
-    style="z-index: 1050;">
+    class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75">
     <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
         <span class="visually-hidden">Cargando...</span>
     </div>
