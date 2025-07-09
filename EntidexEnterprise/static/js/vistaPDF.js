@@ -402,29 +402,27 @@ document
 
 // Funciones JavaScript
 function modalNuevoPDF(config) {
-
-
     let modal = new bootstrap.Modal(document.getElementById('pdfModal'));
     modal.show();
 
+    // Validación Numerodecaso: solo letras
     $("#Numerodecaso").off().on("input", function () {
         let valor = $(this).val();
+        $(this).val(valor);
+    });
 
-        // Elimina cualquier caracter no numérico
-        valor = valor.replace(/\D/g, "");
-        // Limita a 10 dígitos
-        if (valor.length > 10) {
-            valor = valor.slice(0, 5);
-        }
-        // Actualiza el valor del input
+    // Validación titulo: solo letras y espacios
+    $("#titulo").off().on("input", function () {
+        let valor = $(this).val();
+        valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
         $(this).val(valor);
     });
 
     $("#titulo").val("");
+    $("#descripcion").val("");
     $("#fecha").val("");
     $("#tipoDocumento").val("");
     $("#jurisdiccion").val("");
-
 }
 
 function toggleOtherDocument() {
@@ -699,6 +697,19 @@ function modalEditarPDF(pdfId) {
             $('#fecha_edit').val(data.fecha);
             $('#tipoDocumento_edit').val(data.tipo_documento);
             $('#jurisdiccion_edit').val(data.jurisdiccion);
+
+            // Validación Numerodecaso_edit: solo letras
+            $("#Numerodecaso_edit").off().on("input", function () {
+                let valor = $(this).val();
+                valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
+                $(this).val(valor);
+            });
+            // Validación titulo_edit: solo letras y espacios
+            $("#titulo_edit").off().on("input", function () {
+                let valor = $(this).val();
+                valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
+                $(this).val(valor);
+            });
 
             // Mostrar el modal Bootstrap
             const modal = new bootstrap.Modal(document.getElementById('pdfModal_edit'));
