@@ -408,8 +408,11 @@ function modalNuevoPDF(config) {
     // Validación Numerodecaso: solo letras
     $("#Numerodecaso").off().on("input", function () {
         let valor = $(this).val();
+        // Elimina cualquier carácter que no sea un número
+        valor = valor.replace(/\D/g, '');
         $(this).val(valor);
     });
+    
 
     // Validación titulo: solo letras y espacios
     $("#titulo").off().on("input", function () {
@@ -699,11 +702,13 @@ function modalEditarPDF(pdfId) {
             $('#jurisdiccion_edit').val(data.jurisdiccion);
 
             // Validación Numerodecaso_edit: solo letras
-            $("#Numerodecaso_edit").off().on("input", function () {
-                let valor = $(this).val();
-                valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
-                $(this).val(valor);
-            });
+            // $("#Numerodecaso").off().on("input", function () {
+            //     let valor = $(this).val();
+            //     // Elimina cualquier carácter que no sea un número
+            //     valor = valor.replace(/\D/g, '');
+            //     $(this).val(valor);
+            // });
+            
             // Validación titulo_edit: solo letras y espacios
             $("#titulo_edit").off().on("input", function () {
                 let valor = $(this).val();
