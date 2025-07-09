@@ -412,7 +412,7 @@ function modalNuevoPDF(config) {
         valor = valor.replace(/\D/g, '');
         $(this).val(valor);
     });
-    
+
 
     // Validación titulo: solo letras y espacios
     $("#titulo").off().on("input", function () {
@@ -420,6 +420,8 @@ function modalNuevoPDF(config) {
         valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
         $(this).val(valor);
     });
+    let hoy = new Date().toISOString().split('T')[0]; // Formato: 'YYYY-MM-DD'
+    $('#fecha').attr('max', hoy);
 
     $("#titulo").val("");
     $("#descripcion").val("");
@@ -698,6 +700,7 @@ function modalEditarPDF(pdfId) {
             $('#Numerodecaso_edit').val(data.numero_caso);
             $('#titulo_edit').val(data.titulo);
             $('#fecha_edit').val(data.fecha);
+
             $('#tipoDocumento_edit').val(data.tipo_documento);
             $('#jurisdiccion_edit').val(data.jurisdiccion);
 
@@ -708,7 +711,9 @@ function modalEditarPDF(pdfId) {
             //     valor = valor.replace(/\D/g, '');
             //     $(this).val(valor);
             // });
-            
+            let hoy = new Date().toISOString().split('T')[0]; // Formato: 'YYYY-MM-DD'
+            $('#fecha_edit').attr('max', hoy);
+
             // Validación titulo_edit: solo letras y espacios
             $("#titulo_edit").off().on("input", function () {
                 let valor = $(this).val();
