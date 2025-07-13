@@ -32,6 +32,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "proyectotallerintegrador-production.up.railway.app",
     "64.23.179.211",
+    "142.93.0.173",
     "127.0.0.1",
     "localhost",
     "e713-38-255-109-34.ngrok-free.app",
